@@ -5,6 +5,7 @@ module.exports = {
   connect: (DB_HOST) => {
     //Use the mongo driver's updated url string parser
     mongoose.set("useNewUrlParser", true);
+    //extra
 
     //Use findOneAndUpdate() in place of findAndModify()
     mongoose.set("useFindAndModify", false);

@@ -4,6 +4,8 @@ const { ApolloServer } = require("apollo-server-express");
 require("dotenv").config();
 
 const jwt = require("jsonwebtoken");
+const helmet = require("helmet");
+const cors = require("cors");
 
 //get user info from a jwt
 const getUser = (token) => {
@@ -28,6 +30,13 @@ const port = process.env.PORT || 4000;
 const DB_HOST = process.env.DB_HOST;
 
 const app = express();
+app.use(
+  helmet({
+    contentSecurityPolicy:
+      process.env.NODE_ENV === "production" ? undefined : false,
+  })
+);
+app.use(cors());
 
 //Connect to the DB
 db.connect(DB_HOST);

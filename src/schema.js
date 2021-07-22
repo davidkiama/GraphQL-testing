@@ -9,6 +9,7 @@ module.exports = gql`
     user(username: String!): User
     users: [User!]!
     me: User!
+    productFeed(cursor: String): ProductFeed
   }
 
   type Mutation {
@@ -28,6 +29,12 @@ module.exports = gql`
     updatedAt: DateTime!
     favoriteCount: Int!
     favoritedBy: [User!]
+  }
+
+  type ProductFeed {
+    products: [Product]!
+    cursor: String!
+    hasNextPage: Boolean
   }
 
   type User {

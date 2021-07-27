@@ -1,3 +1,5 @@
+"use strict";
+
 //Require the mongoose library
 const mongoose = require("mongoose");
 

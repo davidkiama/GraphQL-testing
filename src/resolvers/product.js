@@ -11,5 +11,3 @@ module.exports = {
     return await models.User.find({ _id: { $in: product.favoritedBy } });
   },
 };
-
-let kiama = "Kiama";

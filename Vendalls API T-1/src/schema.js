@@ -19,7 +19,7 @@ module.exports = gql`
       tel: String!
       paybill: String!
     ): String!
-    signIn(username: String, email: String, password: String!): String!
+    signInVendor(username: String, email: String, password: String!): String!
     createProduct(title: String!, desc: String!, price: Int!): Product!
     updateProduct(id: ID!, title: String, desc: String, price: Int): Product!
     deleteProduct(id: ID!): Boolean

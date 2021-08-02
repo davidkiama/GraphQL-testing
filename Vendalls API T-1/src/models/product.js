@@ -18,17 +18,17 @@ const ProductSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Vendor",
     required: true,
-    // type: String,
-    // required: true,
   },
   favouriteCount: {
     type: Number,
     default: 0,
   },
-  favouritedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
+  favouritedBy: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Vendor",
+    },
+  ],
 });
 
 const Product = mongoose.model("Product", ProductSchema);

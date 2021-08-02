@@ -6,6 +6,7 @@ const {
   AuthenticationError,
   ForbiddenError,
 } = require("apollo-server-express");
+const { vendors } = require("./query");
 
 async function prodVendorCheck(id, { models, vendor }, msg) {
   if (!vendor)
@@ -42,7 +43,7 @@ async function signIn({ email, username, password }, { models }, Account) {
 }
 
 async function signUp(
-  { username, email, password, tel, paybill },
+  { email, username, password, tel, paybill },
   { models },
   Account
 ) {
@@ -77,7 +78,57 @@ async function signUp(
   }
 }
 
+async function favouriteProduct({ id }, { models }, Account) {
+  const acc = Account;
+  console.log(acc);
+  if (!acc) throw new AuthenticationError("Can't fav products");
+
+  let prodCheck = await models.Product.findById(id);
+  const hasAcc = prodCheck.favouritedBy.indexOf(acc.id);
+
+  //If the acc exist in the favourites list
+  //pull them from the list and reduce the favoriteCount by one
+
+  if (hasAcc >= 0) {
+    return await models.Product.findByIdAndUpdate(
+      id,
+      {
+        $pull: {
+          favouritedBy: mongoose.Types.ObjectId(acc.id),
+        },
+        $inc: {
+          favouriteCount: -1,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+  } else {
+    //If the acc does not exist in the favourites list
+    //add them from the list and increment the favoriteCount by one
+    return await models.Product.findByIdAndUpdate(
+      id,
+      {
+        $push: {
+          favouritedBy: mongoose.Types.ObjectId(acc.id),
+        },
+        $inc: {
+          favouriteCount: 1,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+  }
+}
+
 module.exports = {
+  toggleFavourite: async (parent, { id }, { models, vendor }) => {
+    return await favouriteProduct({ id }, { models }, vendor);
+  },
+
   createProduct: async (parent, args, { models, vendor }) => {
     return await models.Product.create({
       title: args.title,
@@ -126,19 +177,19 @@ module.exports = {
     );
   },
 
-  signUpVendor: async (
-    parent,
-    { username, email, password, tel, paybill },
-    { models }
-  ) => {
-    return await signUp(
-      { username, email, password, tel, paybill },
-      { models },
-      "Vendor"
-    );
+  signUpVendor: async (parent, { ...vendorArgs }, { models }) => {
+    return await signUp({ ...vendorArgs }, { models }, "Vendor");
   },
 
-  signInVendor: async (parent, { email, username, password }, { models }) => {
-    return await signIn({ email, username, password }, { models }, "Vendor");
+  signUpUser: async (parent, { ...userArgs }, { models }) => {
+    return await signUp({ ...userArgs }, { models }, "User");
+  },
+
+  signInVendor: async (parent, { ...userArgs }, { models }) => {
+    return await signIn({ ...userArgs }, { models }, "Vendor");
+  },
+
+  signInUser: async (parent, { ...userArgs }, { models }) => {
+    return await signIn({ ...userArgs }, { models }, "User");
   },
 };

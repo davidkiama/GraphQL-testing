@@ -46,7 +46,7 @@ const server = new ApolloServer({
     const vendor = getVendor(token);
 
     //lets log the vendor
-    console.log(vendor);
+    // console.log(vendor);
 
     return { models, vendor };
   },

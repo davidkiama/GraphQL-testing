@@ -42,7 +42,7 @@ module.exports = {
     }
 
     try {
-      //if everything checks out, remove the note
+      //if everything checks out, remove the product
       await product.remove();
       return true;
     } catch (err) {
@@ -141,6 +141,7 @@ module.exports = {
 
     //check if the user has already favorited the product
     let prodCheck = await models.Product.findById(id);
+
     const hasUser = prodCheck.favoritedBy.indexOf(user.id);
 
     //If the user exist in the list

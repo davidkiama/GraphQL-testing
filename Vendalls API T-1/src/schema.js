@@ -11,15 +11,16 @@ module.exports = gql`
   }
 
   type Mutation {
-    signUpUser(username: String!, email: String!, password: String!): String!
+    signUpUser(email: String!, username: String!, password: String!): String!
     signUpVendor(
-      username: String!
       email: String!
+      username: String!
       password: String!
       tel: String!
       paybill: String!
     ): String!
-    signInVendor(username: String, email: String, password: String!): String!
+    signInVendor(email: String, username: String, password: String!): String!
+    signInUser(email: String, username: String, password: String!): String!
     createProduct(title: String!, desc: String!, price: Int!): Product!
     updateProduct(id: ID!, title: String, desc: String, price: Int): Product!
     deleteProduct(id: ID!): Boolean
@@ -32,6 +33,8 @@ module.exports = gql`
     desc: String!
     price: Int!
     vendor: Vendor!
+    favouriteCount: Int!
+    favouritedBy: [Vendor!]
   }
 
   type User {
@@ -51,13 +54,3 @@ module.exports = gql`
     products: [Product!]!
   }
 `;
-
-// type Product {
-//   id: ID!
-//   title: String!
-//   desc: String!
-//   price: Int!
-//   vendor: Vendor!
-//   favouriteCount: Int!
-//   favouritedBy: [User!]
-// }

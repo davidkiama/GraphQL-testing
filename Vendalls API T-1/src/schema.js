@@ -8,6 +8,8 @@ module.exports = gql`
     product(id: ID!): Product!
     vendors: [Vendor!]!
     vendor(id: ID!): Vendor!
+    users: [User!]!
+    user(id: ID!): User!
   }
 
   type Mutation {
@@ -34,7 +36,7 @@ module.exports = gql`
     price: Int!
     vendor: Vendor!
     favouriteCount: Int!
-    favouritedBy: [Vendor!]
+    favouritedBy: [User!]
   }
 
   type User {

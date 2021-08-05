@@ -14,4 +14,12 @@ module.exports = {
   vendor: async (parent, args, { models }) => {
     return await models.Vendor.findById(args.id);
   },
+
+  users: async (parent, args, { models }) => {
+    return await models.User.find({});
+  },
+
+  user: async (parent, args, { models }) => {
+    return await models.User.findById(args.id);
+  },
 };

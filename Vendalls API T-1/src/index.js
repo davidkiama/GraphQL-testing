@@ -6,7 +6,7 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 
 //get vendor info from the webtoken
-const getVendor = (token) => {
+const getAccount = (token) => {
   if (token) {
     try {
       // return vendor info from the token
@@ -23,7 +23,6 @@ const db = require("./db");
 const models = require("./models");
 const typeDefs = require("./schema");
 const resolvers = require("./resolvers");
-const { vendor } = require("./resolvers/query");
 
 //
 const port = process.env.PORT || 4000;
@@ -43,12 +42,12 @@ const server = new ApolloServer({
     //get the token from the headers
     const token = req.headers.authorization;
     //get the vendor using the token
-    const vendor = getVendor(token);
+    const account = getAccount(token);
 
     //lets log the vendor
     // console.log(vendor);
 
-    return { models, vendor };
+    return { models, account };
   },
 });
 

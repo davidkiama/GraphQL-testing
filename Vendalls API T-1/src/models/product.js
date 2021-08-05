@@ -26,7 +26,7 @@ const ProductSchema = new mongoose.Schema({
   favouritedBy: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Vendor",
+      ref: "User",
     },
   ],
 });

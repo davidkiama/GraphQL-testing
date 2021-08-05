@@ -8,14 +8,14 @@ const {
 } = require("apollo-server-express");
 const { vendors } = require("./query");
 
-async function prodVendorCheck(id, { models, vendor }, msg) {
-  if (!vendor)
+async function prodVendorCheck(id, { models, account }, msg) {
+  if (!account)
     throw new AuthenticationError(` Must be signed it to ${msg} products`);
 
   const product = await models.Product.findById(id);
 
-  //check if prod id was created by the vendor
-  if (product && String(product.vendor) !== vendor.id) {
+  //check if prod id was created by the account passed in
+  if (product && String(product.vendor) !== account.id) {
     throw new ForbiddenError(`Not allowed to ${msg} this product`);
   }
 
@@ -78,13 +78,11 @@ async function signUp(
   }
 }
 
-async function favouriteProduct({ id }, { models }, Account) {
-  const acc = Account;
-  console.log(acc);
-  if (!acc) throw new AuthenticationError("Can't fav products");
+async function favouriteProduct({ id }, { models, account }) {
+  if (!account) throw new AuthenticationError("Can't fav products");
 
   let prodCheck = await models.Product.findById(id);
-  const hasAcc = prodCheck.favouritedBy.indexOf(acc.id);
+  const hasAcc = prodCheck.favouritedBy.indexOf(account.id);
 
   //If the acc exist in the favourites list
   //pull them from the list and reduce the favoriteCount by one
@@ -94,7 +92,7 @@ async function favouriteProduct({ id }, { models }, Account) {
       id,
       {
         $pull: {
-          favouritedBy: mongoose.Types.ObjectId(acc.id),
+          favouritedBy: mongoose.Types.ObjectId(account.id),
         },
         $inc: {
           favouriteCount: -1,
@@ -111,7 +109,7 @@ async function favouriteProduct({ id }, { models }, Account) {
       id,
       {
         $push: {
-          favouritedBy: mongoose.Types.ObjectId(acc.id),
+          favouritedBy: mongoose.Types.ObjectId(account.id),
         },
         $inc: {
           favouriteCount: 1,
@@ -124,24 +122,30 @@ async function favouriteProduct({ id }, { models }, Account) {
   }
 }
 
-module.exports = {
-  toggleFavourite: async (parent, { id }, { models, vendor }) => {
-    return await favouriteProduct({ id }, { models }, vendor);
-  },
+async function checkUserOrVendor({ models, account }) {
+  //checks if acc passed is vendor or user
+  if (await models.Vendor.findOne({ _id: account.id })) return "Vendor";
+  if (await models.User.findOne({ _id: account.id })) return "User";
+}
 
-  createProduct: async (parent, args, { models, vendor }) => {
+module.exports = {
+  createProduct: async (parent, args, { models, account }) => {
+    // Guard clause
+    const acc = await checkUserOrVendor({ models, account });
+    if (acc === "User") throw new AuthenticationError("Must be a vendor... ");
+
     return await models.Product.create({
       title: args.title,
       desc: args.desc,
       price: args.price,
 
       //reference the vendor's mongo id
-      vendor: mongoose.Types.ObjectId(vendor.id),
+      vendor: mongoose.Types.ObjectId(account.id),
     });
   },
 
-  deleteProduct: async (parent, { id }, { models, vendor }) => {
-    const product = await prodVendorCheck(id, { models, vendor }, "delete");
+  deleteProduct: async (parent, { id }, { models, account }) => {
+    const product = await prodVendorCheck(id, { models, account }, "delete");
 
     try {
       await product.remove();
@@ -155,9 +159,9 @@ module.exports = {
   updateProduct: async (
     parent,
     { id, title, desc, price },
-    { models, vendor }
+    { models, account }
   ) => {
-    const product = await prodVendorCheck(id, { models, vendor }, "update");
+    const product = await prodVendorCheck(id, { models, account }, "update");
 
     //update the product in the DB and return it
     return await models.Product.findOneAndUpdate(
@@ -191,5 +195,14 @@ module.exports = {
 
   signInUser: async (parent, { ...userArgs }, { models }) => {
     return await signIn({ ...userArgs }, { models }, "User");
+  },
+
+  toggleFavourite: async (parent, { id }, { models, account }) => {
+    // Guard clause
+    const acc = await checkUserOrVendor({ models, account });
+    if (acc === "Vendor")
+      throw new AuthenticationError("Vendors can't fav products... ");
+
+    return await favouriteProduct({ id }, { models, account });
   },
 };

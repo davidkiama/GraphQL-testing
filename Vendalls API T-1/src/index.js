@@ -1,9 +1,13 @@
 "use strict";
 const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
+const depthLimit = require("graphql-depth-limit");
+const { createComplexityLimitRule } = require("graphql-validation-complexity");
 require("dotenv").config();
 
 const jwt = require("jsonwebtoken");
+const helmet = require("helmet");
+const cors = require("cors");
 
 //get vendor info from the webtoken
 const getAccount = (token) => {
@@ -33,19 +37,24 @@ db.connect(DB_HOST);
 
 //
 const app = express();
+app.use(
+  helmet({
+    contentSecurityPolicy:
+      process.env.NODE_ENV === "production" ? undefined : false,
+  })
+);
+app.use(cors());
 
 //
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ req }) => {
+  validationRules: [depthLimit(5), createComplexityLimitRule(1000)],
+  context: async ({ req }) => {
     //get the token from the headers
     const token = req.headers.authorization;
     //get the vendor using the token
-    const account = getAccount(token);
-
-    //lets log the vendor
-    // console.log(vendor);
+    const account = await getAccount(token);
 
     return { models, account };
   },

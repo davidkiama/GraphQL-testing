@@ -10,6 +10,8 @@ module.exports = gql`
     vendor(id: ID!): Vendor!
     users: [User!]!
     user(id: ID!): User!
+    me: User!
+    productFeed(cursor: String): ProductFeed
   }
 
   type Mutation {
@@ -54,5 +56,11 @@ module.exports = gql`
     tel: String!
     paybill: String!
     products: [Product!]!
+  }
+
+  type ProductFeed {
+    products: [Product!]!
+    cursor: String!
+    hasNextPage: Boolean!
   }
 `;
